@@ -1,0 +1,534 @@
+openapi: 3.0.3
+info:
+  title: Dokumen API APP Travel Maqdis
+  description: Dokumentasi API function
+  termsOfService:
+  license:
+    name: Travel App  Package
+    url:
+  version: 1.0.11
+servers:
+  - url: https://xgc1ffbr-5000.asse.devtunnels.ms
+tags:
+  - name: Authentication & Authorization
+    description: Signup Akun dan Authorization
+    externalDocs:
+      description: Deskripsi dan Kode Program
+      url:
+  - name: profile
+    description: Update Get Profile User
+    externalDocs:
+      description: Deskripsi dan Kode Program
+      url:
+  - name: Grup
+    description: Create Read Get Update grup
+    externalDocs:
+      description: Deskripsi dan Kode Program
+      url:
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        whatsapp:
+          type: string
+        password:
+          type: string
+      example:
+        username: budi
+        email: budi@gmail.com
+        whatsapp: "0877xxxxx"
+        password: "123456"
+    Userlogin:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        email: budi@gmail.com
+        password: "123456"
+
+    profile:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: a0cedcfe-f096-4e07-af14-6e5b41594bbf
+              name:
+                type: string
+                example: budi
+              email:
+                type: string
+                example: budi@gmail.com
+              whatsapp:
+                type: string
+                example: "0877xxxxx"
+              role:
+                type: string
+                example: User
+              profile:
+                type: object
+                properties:
+                  photo:
+                    type: string
+                    example: https://i.pravatar.cc/300
+    Grup:
+      type: object
+      properties:
+        grupid:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+        nama_grup:
+          type: string
+          example: Grup Kajian
+        created_by:
+          type: string
+          example: 8c123985-70de-4fd3-98b2-2c84763898f9
+        open_user:
+          type: integer
+          example: 1
+        status:
+          type: string
+          example: open
+        created_at:
+          type: string
+          format: date-time
+          example: 2024-10-31T10:00:00Z
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Peserta'
+    Peserta:
+      type: object
+      properties:
+        peserta_grupid:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+        userId:
+          type: string
+          example: 8c123985-70de-4fd3-98b2-2c84763898f9
+        online:
+          type: string
+          example: waiting
+        grupid:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+    
+  
+
+
+  securitySchemes:
+    token:
+      type: apiKey
+      name: token
+      in: header
+
+security:
+  - token: []
+
+paths:
+  # ------------------------- Authentication & Authorization
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication & Authorization
+      summary: Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: Successful registration
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication & Authorization
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Userlogin"
+      responses:
+        "200":
+          description: Successful login
+
+  /api/protected:
+    get:
+      tags:
+        - Authentication & Authorization
+      summary: Protected route
+      security:
+        - token: []
+      responses:
+        "200":
+          description: Access granted
+
+  # ------------------------- profile
+  /api/profile/me:
+    get:
+      tags:
+        - profile
+      summary: Get Profile
+      security:
+        - token: []
+      responses:
+        200:
+          description: Berhasil mendapatkan profil pengguna
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: John Doe
+                      email:
+                        type: string
+                        example: johndoe@example.com
+                      id:
+                        type: string
+                        example: 123e4567-e89b-12d3-a456-426614174000
+                      role:
+                        type: string
+                        example: ustadz
+                      profile:
+                        type: object
+                        properties:
+                          photo:
+                            type: string
+                            example: http://localhost:5000/uploads/profile1.jpg
+        404:
+          description: Akun tidak ditemukan
+        500:
+          description: Server error
+  /api/profile:
+    put:
+      tags:
+        - profile
+      summary: Update Profile
+      security:
+        - token: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Profil berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  profile:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: John Doe
+                      photo:
+                        type: string
+                        example: /uploads/profile1.jpg
+        400:
+          description: Bad request, input tidak valid
+        500:
+          description: Server error
+  # ------------------------- Grup
+  /api/Group:
+    post:
+      tags:
+        - Grup
+      summary: Create Grup
+      security:
+        - token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nama_grup:
+                  type: string
+                  example: Grup Kajian Al-Quran
+              required:
+                - nama_grup
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID pengguna yang membuat grup (hanya ustadz)
+      responses:
+        '200':
+          description: Grup berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Grup'
+        '401':
+          description: Hanya ustadz yang dapat membuat grup
+        '500':
+          description: Server error
+  /api/Group/join:
+    post:
+      tags:
+        - Grup
+      summary: Bergabung dengan grup
+      security:
+        - token: []
+      operationId: joinGrup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grupid:
+                  type: string
+                  example: 123e4567-e89b-12d3-a456-426614174000
+              required:
+                - grupid
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID pengguna yang bergabung dengan grup
+      responses:
+        '200':
+          description: Pengguna berhasil bergabung dengan grup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Anda berhasil join grup dan masuk ke waiting room.
+                  roomStatus:
+                    type: string
+                    example: waiting room
+                  audioControl:
+                    type: string
+                    example: listen-only
+        '400':
+          description: Pengguna sudah berada dalam grup lain
+        '404':
+          description: Grup tidak ditemukan
+        '500':
+          description: Server error
+
+  /api/Group/exit:
+    post:
+      tags:
+        - Grup
+      summary: Keluar dari grup
+      security:
+        - token: []
+      operationId: exitGrup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grupid:
+                  type: string
+                  example: 123e4567-e89b-12d3-a456-426614174000
+              required:
+                - grupid
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID pengguna yang ingin keluar dari grup
+      responses:
+        '200':
+          description: Pengguna berhasil keluar dari grup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Anda telah keluar dari grup.
+        '400':
+          description: Pengguna belum tergabung dalam grup ini
+        '500':
+          description: Server error
+
+  /api/Group/{grupid}:
+    delete:
+      tags:
+        - Grup
+      summary: Menghapus grup
+      security:
+        - token: []
+      operationId: deleteGrup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grupid:
+                  type: string
+                  example: 123e4567-e89b-12d3-a456-426614174000
+              required:
+                - grupid
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID pengguna yang melakukan penghapusan
+      responses:
+        '200':
+          description: Grup berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Grup dan semua peserta telah berhasil dihapus.
+        '403':
+          description: Pengguna tidak memiliki hak untuk menghapus grup
+        '404':
+          description: Grup tidak ditemukan
+        '500':
+          description: Server error
+
+  /api/Group/:
+    get:
+      tags:
+        - Grup
+      summary: Mendapatkan semua grup
+      operationId: getGrup
+      responses:
+        '200':
+          description: Daftar grup yang tersedia
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grup'
+        '500':
+          description: Server error
+  /api/Group/cekGrup/{grupid}:
+    get:
+      tags:
+        - Grup
+      summary: Mendapatkan detail grup berdasarkan grupid
+      operationId: cekGrup
+      parameters:
+        - in: path
+          name: grupid
+          required: true
+          schema:
+            type: string
+            example: 123e4567-e89b-12d3-a456-426614174000
+          description: ID grup yang akan diambil detailnya
+      responses:
+        '200':
+          description: Detail grup berhasil ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  grupid:
+                    type: string
+                    example: 123e4567-e89b-12d3-a456-426614174000
+                  nama_grup:
+                    type: string
+                    example: Grup Kajian
+                  created_by:
+                    type: string
+                    example: 8c123985-70de-4fd3-98b2-2c84763898f9
+                  participants:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: Ahmad Zain
+                            role:
+                              type: string
+                              example: user
+        '404':
+          description: Grup tidak ditemukan
+        '500':
+          description: Server error
+          
+
+ 
